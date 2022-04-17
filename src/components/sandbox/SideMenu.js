@@ -1,81 +1,53 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import {
-    UserOutlined,
-    VideoCameraOutlined,
-    UploadOutlined,
-    SettingOutlined
+    UserOutlined
   } from '@ant-design/icons';
   import './Components.css';
-import { render } from '@testing-library/react';
+import axios from 'axios';
 
 const { Sider } = Layout;
 const { SubMenu } = Menu;
 
-//模拟数组结构
-const menuList = [
-  {
-    key: "/home",
-    title: "首页",
-    icon: <UserOutlined />
-  },
-  {
-    key: "/user",
-    title: "用户管理",
-    icon: <UserOutlined />,
-    children: [
-      {
-        key: "/user/list",
-        title: "用户列表",
-        icon: <UserOutlined />
-      }
-    ]
-  },
-  {
-    key: "/right",
-    title: "权限管理",
-    icon: <UserOutlined />,
-    children: [
-      {
-        key: "/role/list",
-        title: "角色列表",
-        icon: <UserOutlined />
-      },
-      {
-        key: "/right/list",
-        title: "权限列表",
-        icon: <UserOutlined />
-      }
-    ]
-  }
-];
-
 function SideMenu(props) {
     const navigate = useNavigate();
+    const location = useLocation();
+    const selectKeys = [location.pathname];
+    const openKeys = ['/'+location.pathname.split('/')[1]]
+    const [menu, setMenu] = useState([]);
+
+    useEffect(()=>{
+      axios.get('http://localhost:5000/rights?_embed=children').then(res=>{
+        setMenu(res.data);
+      });
+    }, []);
 
     const renderMenu = (menuList)=>{
       return menuList.map((item)=>{
-        if (item.children) {
+        if (item.children?.length>0 && item.pagepermisson) {
           return (
-            <SubMenu key={item.key} icon={item.icon} title={item.title}>
+            <SubMenu key={item.key} icon={<UserOutlined />} title={item.title}>
               {renderMenu(item.children)}
             </SubMenu>
           );
         }
 
-        return <Menu.Item key={item.key} icon={item.icon} onClick={()=>{
-          navigate(item.key);
-        }}>{item.title}</Menu.Item>
+        return item.pagepermisson && <Menu.Item key={item.key} icon={<UserOutlined />} onClick={()=>{ navigate(item.key); }}>{item.title}</Menu.Item>
       });
     }
     
     return (
         <Sider trigger={null} collapsible collapsed={false} >
-          <div className="logo">全球新闻发布管理系统</div>
-          <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
-            {renderMenu(menuList)}
-          </Menu>
+          <div style={{display:"flex", height:"100%", flexDirection:"column"}}>
+            <div className="logo">全球新闻发布管理系统</div>
+            <div style={{flex:"1", overflow:"auto"}}>
+              <Menu theme="dark" mode="inline" selectedKeys={selectKeys} defaultOpenKeys={openKeys}>
+                {renderMenu(menu)}
+              </Menu>
+            </div>
+          </div>
         </Sider>
     );
 }
