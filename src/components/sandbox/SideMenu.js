@@ -24,9 +24,15 @@ function SideMenu(props) {
       });
     }, []);
 
+    const { role: {rights} } = JSON.parse(localStorage.getItem('token'));
+
+    const checkPagePermission = (item) => {
+      return item.pagepermisson && rights.includes(item.key);
+    }
+
     const renderMenu = (menuList)=>{
       return menuList.map((item)=>{
-        if (item.children?.length>0 && item.pagepermisson) {
+        if (item.children?.length>0 && checkPagePermission(item)) {
           return (
             <SubMenu key={item.key} icon={<UserOutlined />} title={item.title}>
               {renderMenu(item.children)}
@@ -34,7 +40,7 @@ function SideMenu(props) {
           );
         }
 
-        return item.pagepermisson && <Menu.Item key={item.key} icon={<UserOutlined />} onClick={()=>{ navigate(item.key); }}>{item.title}</Menu.Item>
+        return checkPagePermission(item) && <Menu.Item key={item.key} icon={<UserOutlined />} onClick={()=>{ navigate(item.key); }}>{item.title}</Menu.Item>
       });
     }
     

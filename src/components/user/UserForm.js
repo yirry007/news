@@ -20,6 +20,44 @@ const UserForm = forwardRef((props, ref) => {
         setRegionDisabled(props.isUpdateDisabled);
     }, [props.isUpdateDisabled]);
 
+    const { roleId, region } = JSON.parse(localStorage.getItem('token'));
+    const roleObj = {
+        1: 'superadmin',
+        2: 'admin',
+        3: 'editor'
+    }
+    const checkRegionDisabled = (item) => {
+        if (props.mode === 1) {//创建
+            if (roleObj[roleId] === 'superadmin') {
+                return false;
+            } else {
+                return item.value !== region;
+            }
+        } else {//更新
+            if (roleObj[roleId] === 'superadmin') {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    const checkRoleDisabled = (item) => {
+        if (props.mode === 1) {//创建
+            if (roleObj[roleId] === 'superadmin') {
+                return false;
+            } else {
+                return roleObj[item.id] !== 'editor';
+            }
+        } else {//更新
+            if (roleObj[roleId] === 'superadmin') {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
     return (
         <Form
             ref={ref}
@@ -52,7 +90,7 @@ const UserForm = forwardRef((props, ref) => {
                 <select style={{ width: '100%', height: '36px' }} disabled={regionDisabled}>
                     {
                         props.regionList.map((item) => (
-                            <option value={item.value} key={item.id}>{item.title}</option>
+                            <option value={item.value} key={item.id} disabled={checkRegionDisabled(item)}>{item.title}</option>
                         ))
                     }
                 </select>
@@ -81,7 +119,7 @@ const UserForm = forwardRef((props, ref) => {
                 }}>
                     {
                         props.roleList.map((item) => (
-                            <option value={item.id} key={item.id}>{item.roleName}</option>
+                            <option value={item.id} key={item.id} disabled={checkRoleDisabled(item)}>{item.roleName}</option>
                         ))
                     }
                 </select>

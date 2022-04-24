@@ -20,17 +20,32 @@ function UserList(props) {
     const [isUpdateVisible, setIsUpdateVisible] = useState(false);
     const [roleList, setRoleList] = useState([]);
     const [regionList, setRegionList] = useState([]);
+    const [current, setCurrent] = useState(null);
     const [isUpdateDisabled, setIsUpdateDisabled] = useState(false);
     const [form] = Form.useForm();
     const addForm = useRef(null);
     const updateForm = useRef(null);
 
+    const { roleId, region, username } = JSON.parse(localStorage.getItem('token'));
+    
+
     //useEffect 相当于 componentDidMount
     useEffect(() => {
-        axios.get('http://localhost:5000/users?_expand=role').then(res => {
-            setDataSource(res.data);
-        });
+        const roleObj = {
+            1: 'superadmin',
+            2: 'admin',
+            3: 'editor'
+        }
 
+        axios.get('http://localhost:5000/users?_expand=role').then(res => {
+            setDataSource(roleObj[roleId] === 'superadmin' ? res.data : [
+                ...res.data.filter(item=>item.username === username),
+                ...res.data.filter(item=>item.region === region && roleObj[item.roleId] === 'editor')
+            ]);
+        });
+    }, [roleId, region, username]);
+
+    useEffect(() => {
         axios.get('http://localhost:5000/regions').then(res => {
             setRegionList(res.data);
         });
@@ -89,6 +104,8 @@ function UserList(props) {
         setIsUpdateDisabled(item.roleId === 1);
 
         updateForm.current.setFieldsValue(item);
+
+        setCurrent(item);
     }
 
     const handleChange = (item) => {
@@ -135,7 +152,7 @@ function UserList(props) {
                 "roleState": true,
                 "default": false,
             }).then((res)=>{
-                console.log(res.data);
+                //console.log(res.data);
                 setDataSource([...dataSource, {
                     ...res.data,
                     role: roleList.filter((item)=>item.id === res.data.roleId)[0]
@@ -146,7 +163,35 @@ function UserList(props) {
         });
     }
 
-    const updateFormOk = () => {}
+    const updateFormOk = () => {
+        updateForm.current.validateFields().then(value=>{
+            setIsUpdateVisible(false);
+
+            setDataSource(dataSource.map(item=>{
+                if (item.id === current.id) {
+                    return {
+                        ...item,
+                        ...value,
+                        role: roleList.filter((data)=>data.id === parseInt(value.roleId))[0]
+                    };
+                } else {
+                    return item;
+                }
+            }));
+
+            setIsUpdateDisabled(!isUpdateDisabled);
+
+            //post到后端，生成id，在设置 dataSource, 方便后面的删除和更新
+            axios.patch('http://localhost:5000/users/'+current.id, {
+                "username": value.username,
+                "password": value.password,
+                "region": value.region,
+                "roleId": parseInt(value.roleId),
+            });
+        }).catch((err)=>{
+            console.log(err);
+        });
+    }
 
     return (
         <div>
