@@ -7,6 +7,8 @@ import RightList from '../../views/sandbox/right/RightList';
 import NewsAdd from '../../views/sandbox/news/NewsAdd';
 import NewsDraft from '../../views/sandbox/news/NewsDraft';
 import NewsCategory from '../../views/sandbox/news/NewsCategory';
+import NewsPreview from '../../views/sandbox/news/NewsPreview';
+import NewsUpdate from '../../views/sandbox/news/NewsUpdate';
 import Audit from '../../views/sandbox/audit/Audit';
 import AuditList from '../../views/sandbox/audit/AuditList';
 import Unpublished from '../../views/sandbox/publish/Unpublished';
@@ -23,6 +25,8 @@ const localRouteMap = {
     '/news/add': <NewsAdd />,
     '/news/draft': <NewsDraft />,
     '/news/category': <NewsCategory />,
+    '/news/preview/:id': <NewsPreview />,
+    '/news/update/:id': <NewsUpdate />,
     '/audit/audit': <Audit />,
     '/audit/list': <AuditList />,
     '/publish/unpublished': <Unpublished />,
@@ -35,15 +39,15 @@ function NewsRouter(props) {
 
     useEffect(() => {
         Promise.all([
-            axios.get('http://localhost:5000/rights'),
-            axios.get('http://localhost:5000/children'),
+            axios.get('/rights'),
+            axios.get('/children'),
         ]).then(res=>{
             setRouteList([...res[0].data, ...res[1].data]);
         });
     }, []);
 
     const checkRoute = (item) => {
-        return localRouteMap[item.key] && item.pagepermisson === 1;
+        return localRouteMap[item.key] && (item.pagepermisson === 1 || item.routepermisson === 1);
     }
 
     const {role: {rights}} = JSON.parse(localStorage.getItem('token'));

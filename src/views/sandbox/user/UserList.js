@@ -37,7 +37,7 @@ function UserList(props) {
             3: 'editor'
         }
 
-        axios.get('http://localhost:5000/users?_expand=role').then(res => {
+        axios.get('/users?_expand=role').then(res => {
             setDataSource(roleObj[roleId] === 'superadmin' ? res.data : [
                 ...res.data.filter(item=>item.username === username),
                 ...res.data.filter(item=>item.region === region && roleObj[item.roleId] === 'editor')
@@ -46,11 +46,11 @@ function UserList(props) {
     }, [roleId, region, username]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/regions').then(res => {
+        axios.get('/regions').then(res => {
             setRegionList(res.data);
         });
 
-        axios.get('http://localhost:5000/roles').then(res => {
+        axios.get('/roles').then(res => {
             setRoleList(res.data);
         });
     }, []);
@@ -112,7 +112,7 @@ function UserList(props) {
         item.roleState = !item.roleState;
         setDataSource([...dataSource]);
 
-        axios.patch('http://localhost:5000/users/'+item.id, {
+        axios.patch('/users/'+item.id, {
             roleState: item.roleState
         });
     }
@@ -133,7 +133,7 @@ function UserList(props) {
     const deleteUser = (item) => {
         //当前页面同步状态 + 后端同步
         setDataSource(dataSource.filter(data => data.id !== item.id));
-        axios.delete('http://localhost:5000/users/' + item.id);
+        axios.delete('/users/' + item.id);
     }
 
     const addFormOk = () => {
@@ -144,7 +144,7 @@ function UserList(props) {
             addForm.current.resetFields();
 
             //post到后端，生成id，在设置 dataSource, 方便后面的删除和更新
-            axios.post('http://localhost:5000/users', {
+            axios.post('/users', {
                 "username": value.username,
                 "password": value.password,
                 "region": value.region,
@@ -182,7 +182,7 @@ function UserList(props) {
             setIsUpdateDisabled(!isUpdateDisabled);
 
             //post到后端，生成id，在设置 dataSource, 方便后面的删除和更新
-            axios.patch('http://localhost:5000/users/'+current.id, {
+            axios.patch('/users/'+current.id, {
                 "username": value.username,
                 "password": value.password,
                 "region": value.region,

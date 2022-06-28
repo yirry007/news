@@ -16,13 +16,13 @@ function RoleList(props) {
 
     //useEffect 相当于 componentDidMount
     useEffect(() => {
-        axios.get('http://localhost:5000/roles').then(res => {
+        axios.get('/roles').then(res => {
             setDataSource(res.data);
         });
     }, []);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/rights?_embed=children').then(res => {
+        axios.get('/rights?_embed=children').then(res => {
             setRightList(res.data);
         });
     }, []);
@@ -72,7 +72,7 @@ function RoleList(props) {
     const deleteRole = (item) => {
         //当前页面同步状态 + 后端同步
         setDataSource(dataSource.filter(data => data.id !== item.id));
-        axios.delete('http://localhost:5000/roles/' + item.id);
+        axios.delete('/roles/' + item.id);
     }
 
     const handleOk = (item) => {
@@ -89,7 +89,7 @@ function RoleList(props) {
             return item;
         }))
 
-        axios.patch('http://localhost:5000/roles/'+currentId, {
+        axios.patch('/roles/'+currentId, {
             rights: currentRights
         });
     }

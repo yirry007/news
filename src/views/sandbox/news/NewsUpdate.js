@@ -11,16 +11,17 @@ import {
 } from 'antd';
 import style from './News.module.css';
 import NewsEditor from '../../../components/news/NewsEditor';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const { Step } = Steps;
 
-function NewsAdd(props) {
+function NewsUpdate(props) {
     const [current, setCurrent] = useState(0);
     const [categories, setCategories] = useState([]);
     const [formInfo, setFormInfo] = useState({});
     const [content, setContent] = useState('');
 
+    const {id} = useParams();
     const navigate = useNavigate();
 
     const user = JSON.parse(localStorage.getItem('token'));
@@ -51,18 +52,10 @@ function NewsAdd(props) {
     }
 
     const handleSave = (auditState) => {
-        axios.post('/news', {
+        axios.patch(`/news/${id}`, {
             ...formInfo,
             'content': content,
-            'region': user.region ? user.region : '全球',
-            'author': user.username,
-            'roleId': user.roleId,
-            'auditState': auditState,
-            'publishState': 0,
-            'createTime': Date.now(),
-            'star': 0,
-            'view': 0,
-            // 'publishTime': 0
+            'auditState': auditState
         }).then(res => {
             navigate(auditState === 0 ? '/news/draft' : '/audit/list');
 
@@ -83,11 +76,24 @@ function NewsAdd(props) {
         });
     }, []);
 
+    useEffect(()=>{
+        axios.get(`/news/${id}?_expand=category&_expand=role`).then(res=>{
+            let {title, categoryId, content} = res.data;
+            NewsForm.current.setFieldsValue({
+                title,
+                categoryId
+            });
+
+            setContent(content);
+        });
+    }, []);
+
     return (
         <div>
             <PageHeader
                 className="site-page-header"
-                title="撰写新闻"
+                title="更新新闻"
+                onBack={()=>{navigate(-1)}}
                 subTitle=""
             />
             <Steps current={current}>
@@ -128,7 +134,7 @@ function NewsAdd(props) {
                     </Form>
                 </div>
                 <div className={current === 1 ? '' : style.hidden}>
-                    <NewsEditor getContent={(value) => { setContent(value) }}></NewsEditor>
+                    <NewsEditor getContent={(value) => { setContent(value) }} content={content}></NewsEditor>
                 </div>
                 <div className={current === 2 ? '' : style.hidden}>3333</div>
             </div>
@@ -147,4 +153,4 @@ function NewsAdd(props) {
     );
 }
 
-export default NewsAdd;
+export default NewsUpdate;

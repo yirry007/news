@@ -3,7 +3,7 @@ import { Button } from 'antd';
 import axios from 'axios';
 
 const ajax = ()=>{
-    axios.get('http://localhost:5000/posts').then(res=>{
+    axios.get('/posts').then(res=>{
         console.log(res);
     });
 }
