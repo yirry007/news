@@ -2,13 +2,17 @@ import React, { useEffect, useState } from 'react';
 import {
     Table,
     Tag,
-    Button
+    Button,
+    notification
 } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function AuditList(props) {
     const [dataSource, setDataSource] = useState([]);
     const { username } = JSON.parse(localStorage.getItem('token'));
+
+    const navigate = useNavigate();
 
     useEffect(()=>{
         axios.get(`/news?author=${username}&auditState_ne=0&publishState_lte=1&_expand=category`).then(res=>{
@@ -49,14 +53,49 @@ function AuditList(props) {
             render: (item)=>{
                 return (
                     <div>
-                        {item.auditState === 1 && <Button type="danger">撤销</Button>}
-                        {item.auditState === 2 && <Button type="primary">发布</Button>}
-                        {item.auditState === 3 && <Button type="primary">更新</Button>}
+                        {item.auditState === 1 && <Button onClick={()=>{handleRevert(item)}}>撤销</Button>}
+                        {item.auditState === 2 && <Button type="danger" onClick={()=>{handlePublish(item)}}>发布</Button>}
+                        {item.auditState === 3 && <Button type="primary" onClick={()=>{handleUpdate(item)}}>更新</Button>}
                     </div>
                 );
             }
         }
     ];
+
+    const handleRevert = (item) => {
+        setDataSource(dataSource.filter(data=>data.id!==item.id));
+
+        axios.patch(`/news/${item.id}`, {
+            auditState: 0
+        }).then(res=>{
+            notification.info({
+                message: '通知',
+                description:
+                    `您可以到草稿箱中查看您的新闻`,
+                placement: 'bottomRight',
+            });
+        });
+    }
+
+    const handleUpdate = (item) => {
+        navigate(`/news/update/${item.id}`);
+    }
+
+    const handlePublish = (item) => {
+        axios.patch(`/news/${item.id}`, {
+            'publishState': 2,
+            'publishTime': Date.now()
+        }).then(res => {
+            navigate('/publish/published');
+
+            notification.info({
+                message: '通知',
+                description:
+                    `您可以到[发布管理/已发布]中查看您的新闻`,
+                placement: 'bottomRight',
+            });
+        });
+    }
 
     return (
         <div>
