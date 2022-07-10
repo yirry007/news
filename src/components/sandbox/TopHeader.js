@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, Dropdown, Menu, Avatar } from 'antd';
 import {
@@ -6,17 +6,20 @@ import {
     MenuFoldOutlined,
     UserOutlined
 } from '@ant-design/icons';
+import { connect } from 'react-redux';
 
 const { Header } = Layout;
 
 function TopHeader(props) {
     const navigate = useNavigate();
-    const [collapsed, setCollapsed] = useState(false);
+    // const [collapsed, setCollapsed] = useState(false);
 
     const { role: {roleName}, username } = JSON.parse(localStorage.getItem('token'));
 
     const changeCollapsed = () => {
-        setCollapsed(!collapsed);
+        //改变 state 的 isCollapsed
+        //console.log(props);
+        props.changeCollapsed();
     }
 
     const menu = (
@@ -33,7 +36,7 @@ function TopHeader(props) {
 
     return (
         <Header className="site-layout-background" style={{ padding: "0 16px" }}>
-            {collapsed ? <MenuUnfoldOutlined onClick={changeCollapsed} /> : <MenuFoldOutlined onClick={changeCollapsed} />}
+            {props.isCollapsed ? <MenuUnfoldOutlined onClick={changeCollapsed} /> : <MenuFoldOutlined onClick={changeCollapsed} />}
             <div style={{ float: "right" }}>
                 <span>欢迎<span style={{color:'#1890ff'}}>{username}</span>回来</span>
                 <Dropdown overlay={menu}>
@@ -44,4 +47,27 @@ function TopHeader(props) {
     );
 }
 
-export default TopHeader;
+/**
+ connect(
+    //mapStateToProps //使组件监听某个状态的改变
+    //mapDispatchToProps //组件改变某个状态
+    //以上两个connect参数会分配到props属性中
+ )(被包装的组件)
+ */
+
+ const mapStateToProps = ({collapsedReducer: {isCollapsed}}) => {
+    return {
+        isCollapsed: isCollapsed
+    }
+ }
+
+ const mapDispatchToProps = {
+    changeCollapsed(){
+        return {
+            type: 'change_collapsed',
+            // payload: 
+        }
+    }
+ }
+
+export default connect(mapStateToProps, mapDispatchToProps)(TopHeader);

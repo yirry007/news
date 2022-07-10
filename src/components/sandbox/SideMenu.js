@@ -7,6 +7,7 @@ import {
   } from '@ant-design/icons';
   import './Components.css';
 import axios from 'axios';
+import { connect } from 'react-redux';
 
 const { Sider } = Layout;
 const { SubMenu } = Menu;
@@ -45,7 +46,7 @@ function SideMenu(props) {
     }
     
     return (
-        <Sider trigger={null} collapsible collapsed={false} >
+        <Sider trigger={null} collapsible collapsed={props.isCollapsed} >
           <div style={{display:"flex", height:"100%", flexDirection:"column"}}>
             <div className="logo">全球新闻发布管理系统</div>
             <div style={{flex:"1", overflow:"auto"}}>
@@ -58,4 +59,10 @@ function SideMenu(props) {
     );
 }
 
-export default SideMenu;
+const mapStateToProps = ({collapsedReducer: {isCollapsed}}) => {
+  return {
+    isCollapsed
+  }
+};
+
+export default connect(mapStateToProps)(SideMenu);
