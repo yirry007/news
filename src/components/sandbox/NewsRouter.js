@@ -16,6 +16,8 @@ import Published from '../../views/sandbox/publish/Published';
 import Sunset from '../../views/sandbox/publish/Sunset';
 import NoPermission from '../../views/sandbox/nopermission/NoPermission';
 import axios from 'axios';
+import { Spin } from 'antd';
+import { connect } from 'react-redux';
 
 const localRouteMap = {
     '/home': <Home />,
@@ -56,21 +58,30 @@ function NewsRouter(props) {
     }
 
     return (
-        <Routes>
-            {
-                routeList.map(item=>{
-                    if (checkRoute(item) && checkUserPermission(item)) {
-                        return <Route exact path={item.key} key={item.key} element={localRouteMap[item.key]} />
-                    }
-                })
-            }
+        <Spin size="large" spinning={props.isLoading}>
+            <Routes>
+                {
+                    routeList.map(item=>{
+                        if (checkRoute(item) && checkUserPermission(item)) {
+                            return <Route exact path={item.key} key={item.key} element={localRouteMap[item.key]} />
+                        }
+                    })
+                }
 
-            <Route exact path="/" element={<Navigate to="/home" />} />
-            {
-                routeList.length > 0 && <Route path="*" element={<NoPermission />} />
-            }
-        </Routes>
+                <Route exact path="/" element={<Navigate to="/home" />} />
+                {
+                    routeList.length > 0 && <Route path="*" element={<NoPermission />} />
+                }
+            </Routes>
+        </Spin>
+        
     );
 }
 
-export default NewsRouter;
+const mapStateToProps = ({loadingReducer: {isLoading}}) => {
+    return {
+        isLoading: isLoading
+    }
+ }
+
+export default connect(mapStateToProps)(NewsRouter);
